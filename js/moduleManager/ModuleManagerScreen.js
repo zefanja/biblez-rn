@@ -17,12 +17,14 @@
  "use strict";
 
 var React = require('React');
-import {View, Text, ListView, ScrollView, TouchableHighlight, TouchableNativeFeedback} from "react-native";
+import {View, Text, ListView, ScrollView, TouchableNativeFeedback, ToastAndroid} from "react-native";
 var Dimensions = require('Dimensions');
+var ProgressBar = require('ProgressBarAndroid');
 var { connect } = require('react-redux');
 var { setUserDisclaimerConfirmed, sync, setRepos, setCurrentRepo ,setRemoteModules} = require('./../actions/moduleManager');
 var StyleSheet = require('StyleSheet');
 import { Button, Toolbar } from 'react-native-material-design';
+var ModalInstall = require('./../common/ModalInstall');
 
 var Dropdown = require('react-native-dropdown-android');
 var mSwordZ = require('NativeModules').SwordZ;
@@ -30,9 +32,12 @@ var mSwordZ = require('NativeModules').SwordZ;
 class ModuleManagerScreen extends React.Component {
   constructor(props) {
     super(props);
-    var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    this.ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
-      dataSource: ds.cloneWithRows(this.props.moduleManager.remoteModules.modules)
+      dataSource: this.ds.cloneWithRows(this.props.moduleManager.remoteModules.modules || []),
+      modalVisible: false,
+      modalMessage: "",
+      loadingRepo: false
     };
   }
 
@@ -48,6 +53,7 @@ class ModuleManagerScreen extends React.Component {
       mSwordZ.SWMgr_getModInfoList((modules) => {
         console.log("MODULES: ", modules);
       });
+      mSwordZ.InstallMgr_setUserDisclaimerConfirmed();
       mSwordZ.InstallMgr_getRemoteSources(this.onSetRepos.bind(this));
     }
   }
@@ -67,19 +73,77 @@ class ModuleManagerScreen extends React.Component {
 
   onRepoChanged(data) {
     this.props.onSetCurrentRepo(data.value, data.selected);
-    mSwordZ.InstallMgr_refreshRemoteSource(data.value, (int) => {
-      console.log(int);
-      //TODO: Handle Error !== 0
-      mSwordZ.InstallMgr_getRemoteModInfoList(data.value, this.onSetRemoteModules.bind(this, data.value));
-    })
+    this.setState({loadingRepo: true});
+    setTimeout(() => {
+      mSwordZ.InstallMgr_refreshRemoteSource(data.value, (int) => {
+        console.log(int);
+        //TODO: Handle Error !== 0
+        mSwordZ.InstallMgr_getRemoteModInfoList(data.value, this.onSetRemoteModules.bind(this, data.value));
+      })
+    }, 100);
   }
 
   onSetRemoteModules(repoName, modules) {
     console.log("REMOTE MODULES:", modules, repoName);
     this.props.onSetRemoteModules(repoName, JSON.parse(modules));
+    this.setState({dataSource: this.ds.cloneWithRows(JSON.parse(modules)), loadingRepo: false});
+  }
+
+  _onInstall() {
+    mSwordZ.InstallMgr_remoteInstallModule(
+      this.props.moduleManager.currentRepo.repoName,
+      this.state.modName,
+      this._onRemoteInstall.bind(this, this.state.modName)
+    )
+  }
+
+  _onRemoteInstall(modName, error) {
+    console.log("_onRemoteInstall", error);
+    if(error === 0)
+      ToastAndroid.show('Installed ' + modName, ToastAndroid.LONG)
+  }
+
+  _onPressModuleInstall(rowId, modName, description) {
+    this.setState({
+      modalVisible: true,
+      modalMessage: "Do you want to install \"" + description + "\" (" + modName + ")?",
+      modName: modName
+    });
+  }
+
+  _renderRow(rowData, sectionId, rowId) {
+    return(
+      <TouchableNativeFeedback onPress={this._onPressModuleInstall.bind(this, rowId, rowData.name, rowData.description)}>
+        <View style={styles.itemContainer}>
+          <View style={styles.listItem}>
+            <Text>{rowData.name}</Text>
+            <Text>{rowData.description}</Text>
+          </View>
+        </View>
+      </TouchableNativeFeedback>
+    )
   }
 
   render() {
+    if(this.state.loadingRepo) {
+      return (
+        <View style={styles.container}>
+          <Toolbar
+            title="Module Manager"
+            icon = "menu"
+            actions={[{
+                icon: 'more-vert',
+                /*onPress: this.increment*/
+            }]}
+            rightIconStyle={{
+                margin: 10
+            }}
+          />
+          <ProgressBar style={styles.progressbar} styleAttr="Large" />
+        </View>
+      )
+    }
+
     return (
       <View style={styles.container}>
         <Toolbar
@@ -93,6 +157,7 @@ class ModuleManagerScreen extends React.Component {
               margin: 10
           }}
         />
+        <ModalInstall visible={this.state.modalVisible} message={this.state.modalMessage} onInstall={this._onInstall.bind(this)}/>
         <View style={styles.listContainer}>
           <Dropdown
             style={{ height: 30, flex: 1, flexDirection: "row"}}
@@ -102,16 +167,7 @@ class ModuleManagerScreen extends React.Component {
           <ScrollView style={styles.scrollView}>
             <ListView
               dataSource={this.state.dataSource}
-              renderRow={(rowData) =>
-              <TouchableNativeFeedback>
-                <View style={styles.itemContainer}>
-                  <View style={styles.listItem}>
-                    <Text>{rowData.name}</Text>
-                    <Text>{rowData.description}</Text>
-                  </View>
-                </View>
-              </TouchableNativeFeedback>
-              }
+              renderRow={(rowData, sectionId, rowId) => this._renderRow(rowData, sectionId, rowId)}
             />
           </ScrollView>
         </View>
@@ -128,6 +184,10 @@ const styles = StyleSheet.create({
   listContainer: {
     marginTop: 56
   },
+  itemContainer: {
+    borderBottomWidth: 1,
+    borderColor: '#eeeeee'
+  },
   toolbar: {
     backgroundColor: '#e9eaed',
     height: 56,
@@ -137,6 +197,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 56
   },
+  progressbar: {
+    marginTop: 112
+  },
   scrollView: {
     height: Dimensions.get("window").height - 112
   },
@@ -145,12 +208,11 @@ const styles = StyleSheet.create({
     color: '#333333',
     marginBottom: 5
   },
-  itemContainer: {
-    borderBottomWidth: 1,
-    borderColor: '#eeeeee'
-  },
   listItem: {
     margin: 10,
+  },
+  installButton: {
+    width: 100
   }
 });
 

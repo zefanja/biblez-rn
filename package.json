@@ -1,0 +1,25 @@
+{
+  "name": "BibleZ",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start"
+  },
+  "dependencies": {
+    "apsl-react-native-button": "^2.4.2",
+    "react": "^0.14.8",
+    "react-native": "^0.23.1",
+    "react-native-dropdown-android": "0.0.11",
+    "react-native-material-design": "^0.3.3",
+    "react-native-material-kit": "^0.3.1",
+    "react-redux": "^4.4.4",
+    "redux": "^3.4.0",
+    "redux-logger": "^2.6.1",
+    "redux-persist": "^2.0.1",
+    "redux-thunk": "^2.0.1"
+  },
+  "devDependencies": {
+    "eslint-config-google": "^0.5.0",
+    "eslint-plugin-react": "^4.3.0"
+  }
+}
