@@ -21,6 +21,7 @@ var BackAndroid = require('BackAndroid');
 var Navigator = require('Navigator');
 var StyleSheet = require('StyleSheet');
 
+var MainScreen = require('./main/MainScreen');
 var WelcomeScreen = require('./welcome/WelcomeScreen');
 var ModuleManagerScreen = require('./moduleManager/ModuleManagerScreen');
 var { connect } = require('react-redux');
@@ -66,8 +67,8 @@ var BibleZNavigator = React.createClass({
       return true;
     }
 
-    if (this.props.scene !== 'welcome') {
-      this.props.dispatch(switchScene('welcome'));
+    if (this.props.scene !== 'main') {
+      this.props.dispatch(switchScene('main'));
       return true;
     }
 
@@ -89,6 +90,14 @@ var BibleZNavigator = React.createClass({
   },
 
   renderScene: function(route, navigator) {
+    if (this.props.scene === "main") {
+      return (
+        <MainScreen
+          {...route}
+          navigator={navigator}
+        />
+      );
+    }
     if (this.props.scene === "welcome") {
       return (
         <WelcomeScreen
@@ -106,7 +115,7 @@ var BibleZNavigator = React.createClass({
       );
     }
     //return <F8TabsView navigator={navigator} />;
-    return <WelcomeScreen navigator={navigator} />
+    return <MainScreen navigator={navigator} />
   },
 });
 

@@ -19,9 +19,9 @@
 
 import { SWITCH_SCENE } from './../actions/moduleManager'
 
-type Scene = 'welcome' | 'moduleManager' | 'main' | 'settings' | 'info';
+type Scene = 'main' | 'welcome' | 'moduleManager' | 'settings' | 'info';
 
-function navigation(state = { scene: 'welcome' }, action) {
+function navigation(state = { scene: 'main' }, action) {
   switch (action.type) {
     case 'SWITCH_SCENE':
       return { ...state, scene: action.scene };

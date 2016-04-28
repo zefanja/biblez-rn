@@ -130,6 +130,7 @@ class ModuleManagerScreen extends React.Component {
         <View style={styles.container}>
           <Toolbar
             title="Module Manager"
+            primary="paperBrown"
             icon = "menu"
             actions={[{
                 icon: 'more-vert',
