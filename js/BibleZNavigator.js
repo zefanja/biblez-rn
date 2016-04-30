@@ -106,15 +106,14 @@ var BibleZNavigator = React.createClass({
         />
       );
     }
-    if (this.props.scene === "moduleManager" /*route.moduleManager*/) {
+    /*if (this.props.scene === "moduleManager") {
       return (
         <ModuleManagerScreen
           {...route}
           navigator={navigator}
         />
       );
-    }
-    //return <F8TabsView navigator={navigator} />;
+    }*/
     return <MainScreen navigator={navigator} />
   },
 });

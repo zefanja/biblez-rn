@@ -22,8 +22,11 @@ var { connect } = require('react-redux');
 var StyleSheet = require('StyleSheet');
 import { Button, Toolbar, Icon } from 'react-native-material-design';
 var { switchScene } = require('./../actions/navigation');
+import type {Scene} from './../reducers/navigation';
 
-import type {Scene} from './..reducers/navigation';
+var ModuleManager = require('./../moduleManager/ModuleManagerScreen');
+var VerseView = require('./VerseView');
+//var Welcome = require('./../welcome/WelcomeScreen');
 
 class MainSreen extends React.Component {
   props: {
@@ -40,44 +43,45 @@ class MainSreen extends React.Component {
   }
 
   onSceneSelect(scene) {
-    this.props.onSceneSelect(scene);
+    this.closeDrawer();
+    if(scene !== this.props.scene)
+      this.props.onSceneSelect(scene);
   }
 
   openDrawer() {
     this.refs.drawer.openDrawer();
   }
 
-  renderContent() {
-    return (
-        <Toolbar
-          title="Main"
-          primary="paperBrown"
-          icon = "menu"
-          onIconPress = {() => this.openDrawer()}
-          actions={[{
-              icon: 'book',
-              /*onPress: this.increment*/
-          }]}
-          rightIconStyle={{
-              margin: 10
-          }}
-        />
-    );
+  closeDrawer() {
+    this.refs.drawer.closeDrawer();
   }
 
-  render() {
-    var navigationView = (
+  renderContent() {
+    if(this.props.scene === "main") {
+      return (
+        <VerseView openDrawer={() => this.openDrawer()} />
+      );
+    }
+    if(this.props.scene === "moduleManager") {
+      return (
+        <ModuleManager openDrawer={() => this.openDrawer()} />
+      );
+    }
+  }
+
+  renderNavigationView() {
+    return (
       <View style={styles.drawer}>
         <View style={styles.drawerHeader}>
           <Text style={styles.drawerHeaderItem}>BibleZ</Text>
         </View>
-        <TouchableNativeFeedback>
+        <TouchableNativeFeedback onPress={this.onSceneSelect.bind(this, 'main')}>
           <View style={styles.drawerItemContainer}>
             <Icon name="import-contacts" style={styles.drawerIcon}/>
             <Text style={styles.drawerItem}>Main</Text>
           </View>
         </TouchableNativeFeedback>
-        <TouchableNativeFeedback>
+        <TouchableNativeFeedback onPress={this.onSceneSelect.bind(this, 'moduleManager')}>
           <View style={styles.drawerItemContainer}>
             <Icon name="local-library" style={styles.drawerIcon}/>
             <Text style={styles.drawerItem}>Module Manager</Text>
@@ -98,13 +102,15 @@ class MainSreen extends React.Component {
         </TouchableNativeFeedback>
       </View>
     );
+  }
 
+  render() {
     return (
       <DrawerLayoutAndroid
         ref="drawer"
         drawerWidth={300}
         drawerPosition={DrawerLayoutAndroid.positions.Left}
-        renderNavigationView={() => navigationView}>
+        renderNavigationView={() => this.renderNavigationView()}>
         <View style={styles.container}>
           {this.renderContent()}
         </View>
@@ -116,8 +122,6 @@ class MainSreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#F5FCFF'
   },
   drawer: {

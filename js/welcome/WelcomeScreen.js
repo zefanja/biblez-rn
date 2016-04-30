@@ -23,7 +23,7 @@ var StyleSheet = require('StyleSheet');
 import { Button } from 'react-native-material-design';
 var { switchScene } = require('./../actions/navigation');
 
-import type {Scene} from './..reducers/navigation';
+import type {Scene} from './../reducers/navigation';
 
 class WelcomeScreen extends React.Component {
   props: {
@@ -46,14 +46,14 @@ class WelcomeScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-          <Text style={styles.welcome}>
-            Welcome to BibleZ
-          </Text>
-          <Text style={styles.instructions}>
-            You don't have any Bible installed. Please open the Module Manager to install a Bible!
-          </Text>
-          <Button text="Open Module Manager" raised={true} onPress={this.onSceneSelect.bind(this, 'moduleManager')} />
-        </View>
+        <Text style={styles.welcome}>
+          Welcome to BibleZ
+        </Text>
+        <Text style={styles.instructions}>
+          You don't have any Bible installed. Please open the Module Manager to install a Bible!
+        </Text>
+        <Button text="Open Module Manager" raised={true} onPress={this.onSceneSelect.bind(this, 'moduleManager')} />
+      </View>
     );
   }
 }

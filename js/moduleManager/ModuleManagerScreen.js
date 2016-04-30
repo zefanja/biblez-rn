@@ -33,8 +33,16 @@ class ModuleManagerScreen extends React.Component {
   constructor(props) {
     super(props);
     this.ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    var result = this.props.moduleManager.remoteModules.modules || [];
+    var listData = [];
+    result.forEach((module) => {
+      if(module.category === "Biblical Texts") {
+        listData.push(module);
+      }
+    });
+    console.log(listData);
     this.state = {
-      dataSource: this.ds.cloneWithRows(this.props.moduleManager.remoteModules.modules || []),
+      dataSource: this.ds.cloneWithRows(listData || []),
       modalVisible: false,
       modalMessage: "",
       loadingRepo: false
@@ -50,11 +58,12 @@ class ModuleManagerScreen extends React.Component {
       this.onUserDisclaimerConfirmed();
       mSwordZ.InstallMgr_syncConfig(this.onSync.bind(this));
     } else {
-      mSwordZ.SWMgr_getModInfoList((modules) => {
+      /*mSwordZ.SWMgr_getModInfoList((modules) => {
         console.log("MODULES: ", modules);
-      });
+      });*/
       mSwordZ.InstallMgr_setUserDisclaimerConfirmed();
-      mSwordZ.InstallMgr_getRemoteSources(this.onSetRepos.bind(this));
+      if(this.props.moduleManager.repos.length === 0)
+        mSwordZ.InstallMgr_getRemoteSources(this.onSetRepos.bind(this));
     }
   }
 
@@ -85,8 +94,16 @@ class ModuleManagerScreen extends React.Component {
 
   onSetRemoteModules(repoName, modules) {
     console.log("REMOTE MODULES:", modules, repoName);
-    this.props.onSetRemoteModules(repoName, JSON.parse(modules));
-    this.setState({dataSource: this.ds.cloneWithRows(JSON.parse(modules)), loadingRepo: false});
+    var result = JSON.parse(modules);
+    var listData = [];
+    result.forEach((module) => {
+      if(module.category === "Biblical Texts") {
+        listData.push(module);
+      }
+    });
+    this.props.onSetRemoteModules(repoName, modules);
+
+    this.setState({dataSource: this.ds.cloneWithRows(listData), loadingRepo: false});
   }
 
   _onInstall() {
@@ -132,10 +149,7 @@ class ModuleManagerScreen extends React.Component {
             title="Module Manager"
             primary="paperBrown"
             icon = "menu"
-            actions={[{
-                icon: 'more-vert',
-                /*onPress: this.increment*/
-            }]}
+            onIconPress = {() => this.props.openDrawer()}
             rightIconStyle={{
                 margin: 10
             }}
@@ -149,11 +163,9 @@ class ModuleManagerScreen extends React.Component {
       <View style={styles.container}>
         <Toolbar
           title="Module Manager"
+          primary="paperBrown"
           icon = "menu"
-          actions={[{
-              icon: 'more-vert',
-              /*onPress: this.increment*/
-          }]}
+          onIconPress = {() => this.props.openDrawer()}
           rightIconStyle={{
               margin: 10
           }}
