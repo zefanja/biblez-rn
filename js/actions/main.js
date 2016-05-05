@@ -16,10 +16,19 @@
  */
 
 "use strict";
-var { combineReducers } = require('redux');
 
-module.exports = combineReducers({
-  navigation: require('./navigation'),
-  moduleManager: require('./moduleManager'),
-  main: require('./main')
-});
+/**
+ * action types
+ */
+export const SET_PASSAGE = "SET_PASSAGE";
+
+/**
+ * action creators
+ */
+function setPassage(passage) {
+  return { type: SET_PASSAGE, passage }
+}
+
+
+module.exports = { setPassage };
+

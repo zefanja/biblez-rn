@@ -16,10 +16,16 @@
  */
 
 "use strict";
-var { combineReducers } = require('redux');
 
-module.exports = combineReducers({
-  navigation: require('./navigation'),
-  moduleManager: require('./moduleManager'),
-  main: require('./main')
-});
+import { SET_PASSAGE } from './../actions/main'
+
+function main(state = { passage: 'Mat.1' }, action) {
+  switch (action.type) {
+    case 'SET_PASSAGE':
+      return { ...state, passage: action.passage };
+    default:
+      return state
+  }
+}
+
+module.exports = main;

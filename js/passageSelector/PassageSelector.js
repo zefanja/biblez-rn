@@ -26,48 +26,31 @@ var { switchScene } = require('./../actions/navigation');
 import type {Scene} from './../reducers/navigation';
 var mSwordZ = require('NativeModules').SwordZ;
 
-class VerseView extends React.Component {
+class PassageSelector extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      verses: [],
-      title: "Main"
+      books: [],
+      title: "Choose a book",
     };
   }
 
   componentDidMount() {
-    mSwordZ.SWMgr_reInit();
     // mSwordZ.SWModule_getBooks("GerNeUe", (books) => {
     //   console.log("BOOKS", JSON.parse(books));
     // });
     // mSwordZ.SWModule_getKeyChildren("GerNeUe", "Mat", (books) => {
     //   console.log("KEY CHILDREN", books);
     // });
-    mSwordZ.SWModule_getRenderText("GerNeUe", this.props.passage, (renderText) => {
-      var verses = JSON.parse(renderText);
-      console.log(verses);
-      this.setState({verses: verses, title: verses[0].verseKey.split(":")[0]});
-    })
   }
 
   onSceneSelect(scene) {
     this.props.onSceneSelect(scene);
   }
 
-  _renderVerses() {
-    var versesView = this.state.verses.map((verse) => {
-      return (
-        <Text key={verse.verseKey}>
-          <Text key={verse.verseKey+"a"} style={styles.verseNumber}>{verse.verseKey.split(":")[1]} </Text>
-          <Text key={verse.verseKey+"b"}>{verse.text} </Text>
-        </Text>
-      )
-    });
-
-    return(
-      <Text style={styles.verseViewContainer}>
-        {versesView}
-      </Text>
+  _renderTiles() {
+    return (
+      <Text>Hallo</Text>
     );
   }
 
@@ -76,19 +59,12 @@ class VerseView extends React.Component {
       <View style={styles.container}>
         <Toolbar
           title={this.state.title}
-          onTitlePress={() => this.onSceneSelect("passage")}
           primary="paperBrown"
           icon = "menu"
           onIconPress = {() => this.props.openDrawer()}
-          actions={[{
-              icon: 'book'
-          }]}
-          rightIconStyle={{
-              margin: 10
-          }}
         />
         <ScrollView style={styles.scrollView}>
-          {this._renderVerses()}
+          {this._renderTiles()}
         </ScrollView>
       </View>
     );
@@ -103,32 +79,12 @@ const styles = StyleSheet.create({
   scrollView: {
     height: Dimensions.get("window").height - 112,
     marginTop: 56
-  },
-  welcome: {
-    fontSize: 25,
-    textAlign: 'center',
-    margin: 10
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5
-  },
-  verseViewContainer: {
-    margin: 10,
-    lineHeight: 25,
-    fontSize: 18,
-    fontFamily: "serif"
-  },
-  verseNumber: {
-    fontWeight: "bold"
   }
 });
 
 function select(store) {
   return {
-    scene: store.navigation.scene,
-    passage: store.main.passage
+    scene: store.navigation.scene
   };
 }
 
@@ -138,4 +94,4 @@ function actions(dispatch) {
   };
 }
 
-module.exports = connect(select, actions)(VerseView);
+module.exports = connect(select, actions)(PassageSelector);

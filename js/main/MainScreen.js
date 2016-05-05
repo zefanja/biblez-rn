@@ -25,6 +25,7 @@ var { switchScene } = require('./../actions/navigation');
 import type {Scene} from './../reducers/navigation';
 
 var ModuleManager = require('./../moduleManager/ModuleManagerScreen');
+var PassageSelector = require('./../passageSelector/PassageSelectorScreen');
 var VerseView = require('./VerseView');
 //var Welcome = require('./../welcome/WelcomeScreen');
 
@@ -39,6 +40,10 @@ class MainSreen extends React.Component {
   }
 
   componentDidMount() {
+
+  }
+
+  onPassageSelect() {
 
   }
 
@@ -65,6 +70,11 @@ class MainSreen extends React.Component {
     if(this.props.scene === "moduleManager") {
       return (
         <ModuleManager openDrawer={() => this.openDrawer()} />
+      );
+    }
+    if(this.props.scene === "passage") {
+      return (
+        <PassageSelector />
       );
     }
   }
