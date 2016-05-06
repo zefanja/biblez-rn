@@ -95,14 +95,15 @@ class ModuleManagerScreen extends React.Component {
   onSetRemoteModules(repoName, modules) {
     console.log("REMOTE MODULES:", modules, repoName);
     var result = JSON.parse(modules);
-    var listData = [];
-    result.forEach((module) => {
-      if(module.category === "Biblical Texts") {
-        listData.push(module);
-      }
-    });
-    this.props.onSetRemoteModules(repoName, modules);
-
+    if (result) {
+      var listData = [];
+      result.forEach((module) => {
+        if(module.category === "Biblical Texts") {
+          listData.push(module);
+        }
+      });
+      this.props.onSetRemoteModules(repoName, result);
+    }
     this.setState({dataSource: this.ds.cloneWithRows(listData), loadingRepo: false});
   }
 
