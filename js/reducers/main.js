@@ -17,12 +17,16 @@
 
 "use strict";
 
-import { SET_PASSAGE } from './../actions/main'
+import { SET_PASSAGE, SET_MODULES, SET_CURRENT_MODULE } from './../actions/main'
 
-function main(state = { passage: 'Mat.1' }, action) {
+function main(state = { passage: 'Mat.1', modules: [] }, action) {
   switch (action.type) {
     case 'SET_PASSAGE':
       return { ...state, passage: action.passage };
+    case 'SET_MODULES':
+      return { ...state, modules: action.modules };
+    case 'SET_CURRENT_MODULE':
+      return { ...state, currentModule: action.module };
     default:
       return state
   }

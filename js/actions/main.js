@@ -21,7 +21,8 @@
  * action types
  */
 export const SET_PASSAGE = "SET_PASSAGE";
-
+export const SET_MODULES = "SET_MODULES";
+export const SET_CURRENT_MODULE = "SET_CURRENT_MODULE";
 /**
  * action creators
  */
@@ -29,6 +30,13 @@ function setPassage(passage) {
   return { type: SET_PASSAGE, passage }
 }
 
+function setModules(modules) {
+  return { type: SET_MODULES, modules }
+}
 
-module.exports = { setPassage };
+function setCurrentModule(module) {
+  return { type: SET_CURRENT_MODULE, module }
+}
+
+module.exports = { setPassage, setModules, setCurrentModule };
 

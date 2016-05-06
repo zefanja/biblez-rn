@@ -21,8 +21,9 @@ import {View, Text, TouchableNativeFeedback, ScrollView, ListView} from "react-n
 var { connect } = require('react-redux');
 var StyleSheet = require('StyleSheet');
 var Dimensions = require('Dimensions');
-import { Button, Toolbar, Icon } from 'react-native-material-design';
+var Icon = require('react-native-vector-icons/MaterialIcons');
 var { switchScene } = require('./../actions/navigation');
+var { setModules, setCurrentModule } = require('./../actions/main');
 import type {Scene} from './../reducers/navigation';
 var mSwordZ = require('NativeModules').SwordZ;
 
@@ -37,21 +38,47 @@ class VerseView extends React.Component {
 
   componentDidMount() {
     mSwordZ.SWMgr_reInit();
-    // mSwordZ.SWModule_getBooks("GerNeUe", (books) => {
-    //   console.log("BOOKS", JSON.parse(books));
-    // });
-    // mSwordZ.SWModule_getKeyChildren("GerNeUe", "Mat", (books) => {
-    //   console.log("KEY CHILDREN", books);
-    // });
-    mSwordZ.SWModule_getRenderText("GerNeUe", this.props.passage, (renderText) => {
-      var verses = JSON.parse(renderText);
-      console.log(verses);
-      this.setState({verses: verses, title: verses[0].verseKey.split(":")[0]});
-    })
+    this.getVerses(true);
+  }
+
+  getVerses(loadModules) {
+    if (loadModules) {
+      mSwordZ.SWMgr_getModInfoList((modules) => {
+        //console.log("MODULES: ", modules);
+        let tmpModules = JSON.parse(modules);
+
+        if(tmpModules.length === 0) {
+          this.onSceneSelect("welcome");
+        } else {
+          this.onHandleModules(tmpModules);
+          let currentModule = this.props.currentModule || tmpModules[0].name
+          mSwordZ.SWModule_getStripText(currentModule, this.props.passage, (renderText) => {
+            var verses = JSON.parse(renderText);
+            console.log(verses);
+            this.setState({verses: verses, title: verses[0].verseKey.split(":")[0]});
+          });
+        }
+      })
+    } else {
+      mSwordZ.SWModule_getStripText(this.props.currentModule, this.props.passage, (renderText) => {
+        var verses = JSON.parse(renderText);
+        console.log(verses);
+        this.setState({verses: verses, title: verses[0].verseKey.split(":")[0]});
+      })
+    }
   }
 
   onSceneSelect(scene) {
     this.props.onSceneSelect(scene);
+  }
+
+  onHandleModules(modules) {
+    this.props.onHandleModules(modules);
+  }
+
+  onModuleSelect(module) {
+    this.props.onModuleSelect(module.title);
+    this.getVerses();
   }
 
   _renderVerses() {
@@ -72,21 +99,27 @@ class VerseView extends React.Component {
   }
 
   render() {
+    let modulesMenu = this.props.modules.map((mod) => {
+      return { title: mod.name, show: 'never' }
+    });
+
     return (
       <View style={styles.container}>
-        <Toolbar
-          title={this.state.title}
-          onTitlePress={() => this.onSceneSelect("passage")}
-          primary="paperBrown"
-          icon = "menu"
-          onIconPress = {() => this.props.openDrawer()}
-          actions={[{
-              icon: 'book'
-          }]}
-          rightIconStyle={{
-              margin: 10
+        <Icon.ToolbarAndroid
+          style={styles.toolbar}
+          navIconName="menu"
+          iconColor="white"
+          onIconClicked = {() => this.props.openDrawer()}
+          actions={modulesMenu}
+          onActionSelected={(idx) => {
+            this.onModuleSelect(modulesMenu[idx]);
           }}
-        />
+          overflowIconName="book"
+        >
+          <View>
+            <Text onPress={() => this.onSceneSelect("passage")} style={styles.toolbarTitle}>{this.state.title}</Text>
+          </View>
+        </Icon.ToolbarAndroid>
         <ScrollView style={styles.scrollView}>
           {this._renderVerses()}
         </ScrollView>
@@ -100,9 +133,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5FCFF'
   },
+  toolbar: {
+    backgroundColor: "#795548",
+    height: 56
+  },
+  toolbarTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#fff",
+  },
   scrollView: {
     height: Dimensions.get("window").height - 112,
-    marginTop: 56
   },
   welcome: {
     fontSize: 25,
@@ -128,13 +169,17 @@ const styles = StyleSheet.create({
 function select(store) {
   return {
     scene: store.navigation.scene,
-    passage: store.main.passage
+    passage: store.main.passage,
+    modules: store.main.modules,
+    currentModule: store.main.currentModule
   };
 }
 
 function actions(dispatch) {
   return {
-    onSceneSelect: (scene) => dispatch(switchScene(scene))
+    onSceneSelect: (scene) => dispatch(switchScene(scene)),
+    onHandleModules: (modules) => dispatch(setModules(modules)),
+    onModuleSelect: (module) => dispatch(setCurrentModule(module))
   };
 }
 
